@@ -1,0 +1,86 @@
+SELECT 
+    CONCAT(I.firstName, ' ', I.lastName) AS 'Name', 
+    I.teamID AS 'Team', 
+    COUNT(*) AS 'Games', SUM(P.inningsPitched) AS 'Total IP', 
+    FORMAT(AVG(P.inningsPitched), 2) AS 'IP/G', 
+    SUM(P.strikeouts) AS 'Total SO', 
+    FORMAT(SUM(P.strikeouts) * 9 / SUM(P.inningsPitched), 2) AS 'SO/9IP' 
+FROM Game_Pitching P, Player I 
+WHERE P.playerId = I.playerID 
+GROUP BY P.playerID 
+HAVING COUNT(*) > 0 
+ORDER BY SUM(P.inningsPitched) DESC
+
+SELECT A.agentID AS 'ID', 
+    CONCAT(A.firstName, ' ', A.lastName) AS 'Name', 
+    A.phone, A.email, FORMAT(AVG(H.bAvg), 3) AS 'AVG',
+    FORMAT(AVG(H.onBasePerc), 3) AS 'OBP', 
+    FORMAT(AVG(H.slugPerc), 3) AS 'SLG', 
+    FORMAT(AVG(H.onBasePerc) + AVG(H.slugPerc), 3) AS 'OPS', 
+    COUNT(*) AS '# of Players' 
+FROM Agent A, Player P 
+JOIN Hitting H ON P.playerID = H.playerID 
+WHERE A.agentID = P.agentID 
+GROUP BY A.agentID 
+HAVING COUNT(*) > 1 
+ORDER BY AVG(H.bAvg) DESC
+
+SELECT
+    CONCAT(A.firstName, ' ', A.lastName) AS 'Name',
+    A.phone,
+    FORMAT(AVG(H.bAvg), 3) AS 'AVG',
+    FORMAT(AVG(H.onBasePerc), 3) AS 'OBP',
+    FORMAT(AVG(H.slugPerc), 3) AS 'SLG',
+    FORMAT(AVG(H.onBasePerc) + AVG(H.slugPerc), 3) AS 'OPS',
+    COUNT(*) AS '# of Players'
+FROM Agent A
+INNER JOIN Player P ON A.agentID = P.agentID
+INNER JOIN Hitting H ON P.playerID = H.playerID
+GROUP BY A.agentID
+HAVING COUNT(*) > 1
+ORDER BY AVG(H.bAvg) DESC
+    
+SELECT
+    CONCAT(A.firstName, ' ', A.lastName) AS 'Name',
+    A.phone,
+    COUNT(*) AS '# Players',
+    FORMAT(AVG(H.bAvg), 3) AS 'Mean bAvg',
+    CONCAT('$', FORMAT(AVG(P.contractSalary), 2)) AS 'Mean Salary'
+FROM Agent A
+INNER JOIN Player P ON A.agentID = P.agentID
+INNER JOIN Hitting H ON P.playerID = H.playerID
+GROUP BY A.agentID
+HAVING COUNT(*) > 1
+ORDER BY AVG(P.contractSalary) DESC
+
+
+SELECT
+    CONCAT(A.firstName, ' ', A.lastName) AS 'Name',
+    A.phone,
+    COUNT(*) AS '# Players',
+    FORMAT(AVG(H.bAvg), 3) AS 'Mean bAvg',
+    FORMAT(AVG(H.homeRuns), 0) AS 'Mean HRs',
+    FORMAT(AVG(H.runsBattedIn), 0) AS 'Mean RBIs',
+    FORMAT(AVG(P.contractLength), 1) AS 'Mean Years',
+    CONCAT('$', FORMAT(AVG(P.contractSalary), 2)) AS 'Mean Salary'
+FROM Agent A
+INNER JOIN Player P ON A.agentID = P.agentID
+INNER JOIN Hitting H ON P.playerID = H.playerID
+GROUP BY A.agentID
+HAVING COUNT(*) > 1
+ORDER BY AVG(H.bAvg) DESC
+
+
+SELECT
+    CONCAT(A.firstName, ' ', A.lastName) AS 'Name',
+    A.phone,
+    LPAD(COUNT(*), 5, ' ') AS '# Players',
+    FORMAT(SUM(H.homeRuns), 0) AS 'Sum of HRs',
+    CONCAT('$', FORMAT(SUM(P.contractSalary), 2)) AS 'Sum of Salaries',
+    CONCAT('$', FORMAT(SUM(P.contractSalary) / SUM(H.homeRuns), 2)) AS '$ Per HR'
+FROM Agent A
+INNER JOIN Player P ON A.agentID = P.agentID
+INNER JOIN Hitting H ON P.playerID = H.playerID
+GROUP BY A.agentID
+HAVING COUNT(*) > 1
+ORDER BY SUM(P.contractSalary) / SUM(H.homeRuns) DESC
